@@ -20,9 +20,9 @@ To connect to LCR4500, install libusb-win32 driver. Recommended way to do is thi
 with Zadig utility (http://zadig.akeo.ie/)
 """
 
-__author__  = 'Alexander Tomlinson'
-__email__   = 'mexander@gmail.com'
-__version__ = '0.7'
+__author__ = "Alexander Tomlinson"
+__email__ = "mexander@gmail.com"
+__version__ = "0.7"
 
 
 def conv_len(a, l):
@@ -36,7 +36,7 @@ def conv_len(a, l):
     """
     b = bin(a)[2:]
     padding = l - len(b)
-    b = '0' * padding + b
+    b = "0" * padding + b
     return b
 
 
@@ -54,11 +54,11 @@ def bits_to_bytes(a, reverse=True):
     # check if needs padding
     if len(a) % 8 != 0:
         padding = 8 - len(a) % 8
-        a = '0' * padding + a
+        a = "0" * padding + a
 
     # convert to bytes
     for i in range(len(a) // 8):
-        bytelist.append(int(a[8 * i:8 * (i + 1)], 2))
+        bytelist.append(int(a[8 * i : 8 * (i + 1)], 2))
 
     if reverse:
         bytelist.reverse()
@@ -101,6 +101,7 @@ class dlpc350(object):
     Class representing dmd controller. Can connect to different DLPCs by changing product ID. Check IDs in
     device manager.
     """
+
     def __init__(self, device):
         """
         Connects the device.
@@ -109,12 +110,7 @@ class dlpc350(object):
         """
         self.dlpc = device
 
-    def command(self,
-                mode,
-                sequence_byte,
-                com1,
-                com2,
-                data=None):
+    def command(self, mode, sequence_byte, com1, com2, data=None):
         """
         Sends a command to the dlpc.
 
@@ -127,8 +123,8 @@ class dlpc350(object):
 
         buffer = []
 
-        if mode == 'r':
-            flagstring = 0xc0  # 0b11000000
+        if mode == "r":
+            flagstring = 0xC0  # 0b11000000
         else:
             flagstring = 0x40  # 0b01000000
 
@@ -184,7 +180,7 @@ class dlpc350(object):
         try:
             self.ans = self.dlpc.read(0x81, 64)
         except USBError as e:
-            print('USB Error:', e)
+            print("USB Error:", e)
 
         time.sleep(0.02)
 
@@ -197,15 +193,17 @@ class dlpc350(object):
 
     def get_main_status(self, pretty_print=False):
         """The Main Status command shows the status of DMD park and DLPC350 sequencer, frame buffer, and gamma
-         correction.
+        correction.
 
-         (USB: CMD2: 0x02, CMD3: 0x0C)
-         """
-        self.command('r', 0x00, 0x1a, 0x0c, [])
+        (USB: CMD2: 0x02, CMD3: 0x0C)
+        """
+        self.command("r", 0x00, 0x1A, 0x0C, [])
         if pretty_print:
             # ans = str(bin(self.ans[4]))[2:]
-            ans = format(self.ans[4], '08b')
-            print(f'\nDMD micromirrors are {"parked" if int(ans[-1]) else "not parked"}')
+            ans = format(self.ans[4], "08b")
+            print(
+                f'\nDMD micromirrors are {"parked" if int(ans[-1]) else "not parked"}'
+            )
             print(f'Sequencer is {"running normally" if int(ans[-2]) else "stopped"}')
             print(f'Frame buffer is {"frozen" if int(ans[-3]) else "not frozen"}')
             print(f'Gamma correction is {"enabled" if int(ans[-4]) else "disabled"}')
@@ -223,7 +221,7 @@ class dlpc350(object):
             :False: Normal operation. The selected external source will be displayed.
         """
         do_standby = int(do_standby)
-        self.command('w', 0x00, 0x02, 0x00, [do_standby])
+        self.command("w", 0x00, 0x02, 0x00, [do_standby])
 
     def start_pattern_lut_validate(self):
         """
@@ -232,7 +230,7 @@ class dlpc350(object):
 
         (USB: CMD2: 0x1A, CMD3: 0x1A)
         """
-        self.command('w', 0x00, 0x1a, 0x1a, bits_to_bytes(conv_len(0x00, 8)))
+        self.command("w", 0x00, 0x1A, 0x1A, bits_to_bytes(conv_len(0x00, 8)))
 
     def set_dmd_park(self, park=False):
         """
@@ -244,7 +242,7 @@ class dlpc350(object):
         :param bool park: Whether to park the dmd mirrors
         """
         park = int(park)
-        self.command('w', 0x00, 0x06, 0x09, [park])
+        self.command("w", 0x00, 0x06, 0x09, [park])
 
     def set_buffer_freeze(self, freeze=False):
         """
@@ -255,9 +253,9 @@ class dlpc350(object):
         :param bool park: Whether to park the dmd mirrors
         """
         park = int(freeze)
-        self.command('w', 0x00, 0x10, 0x0a, [freeze])
+        self.command("w", 0x00, 0x10, 0x0A, [freeze])
 
-    def set_display_mode(self, mode='pattern'):
+    def set_display_mode(self, mode="pattern"):
         """
         Selects the input mode for the projector.
 
@@ -267,13 +265,13 @@ class dlpc350(object):
             :0: "video" mode
             :1: "pattern" mode
         """
-        modes = ['video', 'pattern']
+        modes = ["video", "pattern"]
         if mode in modes:
             mode = modes.index(mode)
 
-        self.command('w', 0x00, 0x1a, 0x1b, [mode])
+        self.command("w", 0x00, 0x1A, 0x1B, [mode])
 
-    def set_pattern_input_source(self, mode='video'):
+    def set_pattern_input_source(self, mode="video"):
         """
         Selects the input type for pattern sequence.
 
@@ -283,13 +281,13 @@ class dlpc350(object):
             :0: "video"
             :3: "flash"
         """
-        modes = ['video', '', '', 'flash']
+        modes = ["video", "", "", "flash"]
         if mode in modes:
             mode = modes.index(mode)
 
-        self.command('w', 0x00, 0x1a, 0x22, [mode])
+        self.command("w", 0x00, 0x1A, 0x22, [mode])
 
-    def set_pattern_trigger_mode(self, mode='vsync'):
+    def set_pattern_trigger_mode(self, mode="vsync"):
         """
         Selects the trigger type for pattern sequence.
 
@@ -298,11 +296,11 @@ class dlpc350(object):
         :param int mode:
             :0: "vsync"
         """
-        modes = ['vsync']
+        modes = ["vsync"]
         if mode in modes:
             mode = modes.index(mode)
 
-        self.command('w', 0x00, 0x1a, 0x23, [mode])
+        self.command("w", 0x00, 0x1A, 0x23, [mode])
 
     def set_gamma_correction(self, apply_gamma=True):
         """
@@ -317,12 +315,12 @@ class dlpc350(object):
         :param bool apply_gamma: Whether to apply gamma correction while in video mode.
         """
         if apply_gamma:
-            apply_gamma = '10000000'
+            apply_gamma = "10000000"
         else:
-            apply_gamma = '00000000'
-        self.command('w', 0x00, 0x1a, 0x0e, bits_to_bytes(apply_gamma))
+            apply_gamma = "00000000"
+        self.command("w", 0x00, 0x1A, 0x0E, bits_to_bytes(apply_gamma))
 
-    def pattern_display(self, action='start'):
+    def pattern_display(self, action="start"):
         """
         This API starts or stops the programmed patterns sequence.
 
@@ -336,15 +334,13 @@ class dlpc350(object):
                re-displaying the current pattern in the sequence.
             :2: Start Pattern Display Sequence.
         """
-        actions = ['stop', 'pause', 'start']
+        actions = ["stop", "pause", "start"]
         if action in actions:
             action = actions.index(action)
 
-        self.command('w', 0x00, 0x1a, 0x24, [action])
+        self.command("w", 0x00, 0x1A, 0x24, [action])
 
-    def set_exposure_frame_period(self,
-                                  exposure_period,
-                                  frame_period):
+    def set_exposure_frame_period(self, exposure_period, frame_period):
         """
         The Pattern Display Exposure and Frame Period dictates the time a pattern is exposed and the frame period.
         Either the exposure time must be equivalent to the frame period, or the exposure time must be less than the
@@ -362,13 +358,11 @@ class dlpc350(object):
         payload = frame_period + exposure_period
         payload = bits_to_bytes(payload)
 
-        self.command('w', 0x00, 0x1a, 0x29, payload)
+        self.command("w", 0x00, 0x1A, 0x29, payload)
 
-    def set_pattern_config(self,
-                           num_lut_entries=3,
-                           do_repeat=True,
-                           num_pats_for_trig_out2=3,
-                           num_images=0):
+    def set_pattern_config(
+        self, num_lut_entries=3, do_repeat=True, num_pats_for_trig_out2=3, num_images=0
+    ):
         """
         This API controls the execution of patterns stored in the lookup table. Before using this API, stop the current
         pattern sequence using ``DLPC350_PatternDisplay()`` API. After calling this API, send the Validation command
@@ -388,15 +382,15 @@ class dlpc350(object):
         :param int num_images: Number of Image Index LUT Entries(range 1 through 64). This Field is irrelevant for Pattern
             Display Data Input Source set to a value other than internal.
         """
-        num_lut_entries = '0' + conv_len(num_lut_entries - 1, 7)
-        do_repeat = '0000000' + str(int(do_repeat))
+        num_lut_entries = "0" + conv_len(num_lut_entries - 1, 7)
+        do_repeat = "0000000" + str(int(do_repeat))
         num_pats_for_trig_out2 = conv_len(num_pats_for_trig_out2 - 1, 8)
-        num_images = '00' + conv_len(num_images, 6)
+        num_images = "00" + conv_len(num_images, 6)
 
         payload = num_images + num_pats_for_trig_out2 + do_repeat + num_lut_entries
         payload = bits_to_bytes(payload)
 
-        self.command('w', 0x00, 0x1a, 0x31, payload)
+        self.command("w", 0x00, 0x1A, 0x31, payload)
 
     def mailbox_set_address(self, address=0):
         """
@@ -407,7 +401,7 @@ class dlpc350(object):
         :param int address: Defines the offset within the selected (opened) LUT to write/read data to/from (0-127).
         """
         address = bits_to_bytes(conv_len(address, 8))
-        self.command('w', 0x00, 0x1a, 0x32, address)
+        self.command("w", 0x00, 0x1A, 0x32, address)
 
     def open_mailbox(self, mbox_num):
         """
@@ -423,17 +417,19 @@ class dlpc350(object):
             :3: Open the mailbox for the Variable Exposure.
         """
         mbox_num = bits_to_bytes(conv_len(mbox_num, 8))
-        self.command('w', 0x00, 0x1a, 0x33, mbox_num)
+        self.command("w", 0x00, 0x1A, 0x33, mbox_num)
 
-    def send_pattern_lut(self,
-                         trig_type,
-                         pat_num,
-                         bit_depth,
-                         led_select,
-                         do_invert_pat=False,
-                         do_insert_black=False,
-                         do_buf_swap=False,
-                         do_trig_out_prev=False):
+    def send_pattern_lut(
+        self,
+        trig_type,
+        pat_num,
+        bit_depth,
+        led_select,
+        do_invert_pat=False,
+        do_insert_black=False,
+        do_buf_swap=False,
+        do_trig_out_prev=False,
+    ):
         """
         Mailbox content to setup pattern definition. See table 2-65 in programmer's guide for detailed description of
         pattern LUT entries.
@@ -516,23 +512,26 @@ class dlpc350(object):
         do_buf_swap = str(int(do_buf_swap))
         do_trig_out_prev = str(int(do_trig_out_prev))
 
-        byte_2 = '0000' + do_trig_out_prev + do_buf_swap + do_insert_black + do_invert_pat
+        byte_2 = (
+            "0000" + do_trig_out_prev + do_buf_swap + do_insert_black + do_invert_pat
+        )
 
         payload = byte_2 + byte_1 + byte_0
         payload = bits_to_bytes(payload)
 
-        self.command('w', 0x00, 0x1a, 0x34, payload)
+        self.command("w", 0x00, 0x1A, 0x34, payload)
 
 
-def pattern_mode(input_mode='pattern',
-                 input_type='video',
-                 num_pats=3,
-                 trigger_type='vsync',
-                 period=fps_to_period(222),
-                 bit_depth=7,
-                 led_color=0b111,  # BGR
-                 **kwargs
-                 ):
+def pattern_mode(
+    input_mode="pattern",
+    input_type="video",
+    num_pats=3,
+    trigger_type="vsync",
+    period=fps_to_period(222),
+    bit_depth=7,
+    led_color=0b111,  # BGR
+    **kwargs,
+):
     """
     Helper function to setup a video pattern mode.
 
@@ -545,14 +544,14 @@ def pattern_mode(input_mode='pattern',
     :param int led_color: See :meth:`pycrafter4500.send_pattern_lut`
     """
 
-    if 'fps' in kwargs:
-        period = fps_to_period(kwargs['fps'])
+    if "fps" in kwargs:
+        period = fps_to_period(kwargs["fps"])
 
     with connect_usb() as lcr:
         assert bit_depth in [1, 2, 4, 7, 8]
 
         # before proceeding to change params, need to stop pattern sequence mode
-        lcr.pattern_display('stop')
+        lcr.pattern_display("stop")
 
         # 1: pattern display mode
         lcr.set_display_mode(input_mode)
@@ -561,8 +560,9 @@ def pattern_mode(input_mode='pattern',
         lcr.set_pattern_input_source(input_type)
 
         # 3: setup number of luts
-        lcr.set_pattern_config(num_lut_entries=num_pats,
-                               num_pats_for_trig_out2=num_pats)
+        lcr.set_pattern_config(
+            num_lut_entries=num_pats, num_pats_for_trig_out2=num_pats
+        )
 
         # 4: Pattern trigger mode selection
         lcr.set_pattern_trigger_mode(trigger_type)
@@ -576,11 +576,13 @@ def pattern_mode(input_mode='pattern',
         # 7: Set up LUT
         lcr.open_mailbox(2)
 
-        bit_map = {1: [7, 15, 23],
-                   2: [3, 7, 11],
-                   4: [1, 3, 5],
-                   7: [0, 1, 2],
-                   8: [0, 1, 2]}
+        bit_map = {
+            1: [7, 15, 23],
+            2: [3, 7, 11],
+            4: [1, 3, 5],
+            7: [0, 1, 2],
+            8: [0, 1, 2],
+        }
 
         for i in range(3):
             if i == 0:
@@ -589,10 +591,12 @@ def pattern_mode(input_mode='pattern',
                 trig_type = 3
 
             lcr.mailbox_set_address(i)
-            lcr.send_pattern_lut(trig_type=trig_type,
-                                 pat_num=bit_map[bit_depth][i],
-                                 bit_depth=bit_depth,
-                                 led_select=led_color)
+            lcr.send_pattern_lut(
+                trig_type=trig_type,
+                pat_num=bit_map[bit_depth][i],
+                bit_depth=bit_depth,
+                led_select=led_color,
+            )
 
         lcr.open_mailbox(0)
 
@@ -600,9 +604,9 @@ def pattern_mode(input_mode='pattern',
         lcr.start_pattern_lut_validate()
 
         # 10: start sequence
-        lcr.pattern_display('start')
+        lcr.pattern_display("start")
         # idk why you need a second start coming out of video mode
-        lcr.pattern_display('start')
+        lcr.pattern_display("start")
 
 
 def video_mode():
@@ -610,8 +614,8 @@ def video_mode():
     Puts LCR4500 into video mode.
     """
     with connect_usb() as lcr:
-        lcr.pattern_display('stop')
-        lcr.set_display_mode('video')
+        lcr.pattern_display("stop")
+        lcr.set_display_mode("video")
 
 
 def power_down():
@@ -619,7 +623,7 @@ def power_down():
     Puts LCR4500 into standby mode.
     """
     with connect_usb() as lcr:
-        lcr.pattern_display('stop')
+        lcr.pattern_display("stop")
         lcr.set_power_mode(do_standby=True)
 
 
