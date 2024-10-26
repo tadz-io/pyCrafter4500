@@ -1,3 +1,1 @@
-from __future__ import absolute_import
-
-from .pycrafter4500 import *
+from pycrafter4500.pycrafter4500 import *  # F403
