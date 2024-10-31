@@ -1,25 +1,17 @@
 import time
 
-from pycrafter4500 import (
-    conv_len,
-    bits_to_bytes,
-    USBError,
-)
+from pycrafter4500.utils import conv_len, bits_to_bytes
 
 
-class dlpc350(object):
-    """
-    Class representing dmd controller. Can connect to different DLPCs by changing product ID. Check IDs in
-    device manager.
-    """
-
+class DLPCBase:
     def __init__(self, device):
-        """
-        Connects the device.
-
-        :param device: lcr4500 USB device.
-        """
         self.dlpc = device
+
+    def write(self, buffer):
+        raise NotImplementedError
+
+    def read(self, buffer):
+        raise NotImplementedError
 
     def command(self, mode, sequence_byte, com1, com2, data=None):
         """
@@ -57,14 +49,14 @@ class dlpc350(object):
             for i in range(64 - len(buffer)):
                 buffer.append(0x00)
 
-            self.dlpc.write(buffer)
+            self.write(buffer)
 
         # else, keep filling buffer and pushing until data all sent
         else:
             for i in range(64 - len(buffer)):
                 buffer.append(data[i])
 
-            self.dlpc.write(buffer)
+            self.write(buffer)
             buffer = []
 
             j = 0
@@ -73,7 +65,7 @@ class dlpc350(object):
                 j += 1
 
                 if j % 64 == 0:
-                    self.dlpc.write(buffer)
+                    self.write(buffer)
                     buffer = []
 
             if j % 64 != 0:
@@ -81,7 +73,7 @@ class dlpc350(object):
                     buffer.append(0x00)
                     j += 1
 
-                self.dlpc.write(buffer)
+                self.write(buffer)
 
         # wait a bit between commands
         # time.sleep(0.02)
@@ -89,11 +81,17 @@ class dlpc350(object):
 
         # done writing, read feedback from dlpc
         try:
-            self.ans = self.dlpc.read(64)
-        except USBError as e:
+            # NOTE: implement read method in base class if necessary
+            # or is it sufficient to send read transaction in flags bite using dlp protocol?
+            # original: self.ans = self.dlpc.read(0x81, 64)
+            self.ans = self.read(64)
+        # NOTE: raise pyusb/hidapi specific USB errors?
+        except ConnectionError as e:
             print("USB Error:", e)
 
         time.sleep(0.02)
+
+        self.write(buffer)
 
     def read_reply(self):
         """
