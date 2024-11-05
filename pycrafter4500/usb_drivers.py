@@ -1,5 +1,6 @@
 import hid
 import time
+import json
 
 from pycrafter4500.dlpc import DLPCBase
 
@@ -94,3 +95,15 @@ class DLPCHydAPI(DLPCBase):
 
     def read(self, buffer):
         return self.dlpc.read(buffer)
+
+
+class DLCPWebHID(DLPCBase):
+    # sio = socketio.Client()
+    # sio.connect()
+    # self.dlpc = sio
+
+    def write(self, buffer):
+        self.dlpc.emit("send_command", json.dumps(buffer))
+
+    def read(self, buffer):
+        return None
