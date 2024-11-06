@@ -99,11 +99,12 @@ class DLPCHydAPI(DLPCBase):
 
 class DLCPWebHID(DLPCBase):
     # sio = socketio.Client()
-    # sio.connect()
+    # sio.connect("http://localhost:8765")
     # self.dlpc = sio
 
     def write(self, buffer):
-        self.dlpc.emit("send_command", json.dumps(buffer))
+        msg = {"type": "send_command", "buffer": buffer}
+        self.dlpc.emit("send_command", json.dumps(msg))
 
     def read(self, buffer):
         return None
