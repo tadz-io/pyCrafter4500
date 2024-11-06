@@ -22,7 +22,12 @@ st.title("USB Device Controller")
 if st.button("Connect to Device"):
     send_to_usb({"type": "connect"})
 
-if st.button("standby"):
+on = st.toggle("standby")
+if on:
+    buffer = [64, 0, 3, 0, 0, 2]
+    send_to_usb({"type": "send_command", "buffer": buffer})
+    dlp.set_power_mode(do_standby=False)
+else:
     dlp.set_power_mode(do_standby=True)
 
 
